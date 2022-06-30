@@ -1,0 +1,78 @@
+#Importing the required modules for execution
+
+import pandas as pd
+import subprocess
+import os
+import requests
+from bs4 import BeautifulSoup
+import json
+import plotly.express as px
+from scipy.signal import savgol_filter
+from statsmodels.nonparametric.kernel_regression import KernelReg
+
+import numpy as np
+from datetime import datetime
+
+Importing the data required for analysis of COVID Infections and Vaccination Rate by the below url:https://ourworldindata.org/coronavirus
+
+csv_url = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv"
+
+
+# Reading the data from url using Pandas
+
+data_frame= pd.read_csv(csv_url,sep=',')#','is used as delimiter
+
+data_frame
+
+
+# Extraction of columns and selection of countries
+
+data_frame.columns
+
+
+
+df_GER=data_frame['location']=='Germany'
+df_IND=data_frame['location']=='India'
+df_FRA=data_frame['location']=='France'
+
+
+# Countries_Data_Analyised = df_GER | df_IND | df_FRA
+
+df_all_list = data_frame[Countries_Data_Analyised]
+
+df_all_list
+
+#Total COVID-19 Cases ploting using plotly .line() method
+covid_plot = px.line(df_all_list, x = "date", y = "total_cases", color ='location', title = 'COVID Cases')
+covid_plot.show()
+
+
+# COVID_19 infection_rate over population using mean
+
+df_all_list['total_infection_mean'] = df_all_list['total_cases']/df_all_list['population']
+
+covid_cases_over_population=px.line(df_all_list, x= "date", y= "total_infection_mean",color='location', title= "Covid Cases")
+covid_cases_over_population.show()
+
+# Vaccination rate over population size
+
+df_all_list['total_vaccination_mean']=  df_all_list['people_fully_vaccinated']/df_all_list['population']
+
+vaccination_plot= px.line(df_all_list, x = "date", y = "total_vaccination_mean", color = "location", title ="Vaccination_rate")
+vaccination_plot.show()
+
+#Smoothing operation to fill up the discountivities in the Vaccination plots
+
+df_result = df_all_list['total_vaccination_mean']
+filter_in = df_all_list['total_vaccination_mean'].fillna(method = 'bfill')
+result = savgol_filter(np.array(filter_in), 5, 1)
+df_all_list['total_vaccination_mean_filtered'] = result
+
+vaccination_plot_1= px.line(df_all_list, x = "date", y = "total_vaccination_mean_filtered", color = "location", title ="Vaccination_rate")
+vaccination_plot_1.show()
+
+
+
+
+
+
